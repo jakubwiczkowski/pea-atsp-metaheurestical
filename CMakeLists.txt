@@ -21,4 +21,7 @@ add_executable(pea_atsp_opt
         src/algorithm/greedy/nearest_neighbour.cpp
         src/algorithm/greedy/nearest_neighbour.h
         src/algorithm/annealing/simulated_annealing.cpp
-        src/algorithm/annealing/simulated_annealing.h)
+        src/algorithm/annealing/simulated_annealing.h
+        src/algorithm/tabu/tabu_search.cpp
+        src/algorithm/tabu/tabu_search.cpp
+        src/algorithm/tabu/tabu_search.h)
