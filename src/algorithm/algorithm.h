@@ -20,6 +20,8 @@ public:
      * @return rozwiązanie problemu Komiwojażera
      */
     virtual solution solve(graph& graph, int time_limit) = 0;
+
+    std::vector<vertex_t> random_permutation(graph& graph);
 };
 
 
