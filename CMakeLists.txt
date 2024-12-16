@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.30)
 project(pea_atsp_opt)
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS "-O0")
+set(CMAKE_CXX_FLAGS "-O3")
 
 add_executable(pea_atsp_opt
         src/main.cpp

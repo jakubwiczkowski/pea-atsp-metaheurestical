@@ -53,8 +53,19 @@ public:
      */
     [[nodiscard]] int get_weight(vertex_t u, vertex_t v) const;
 
+    /**
+     * Zamienia graf w postać listy sąsiedztwa
+     *
+     * @return reprezentacja grafu jako lista sąsiedztwa
+     */
     std::vector<std::vector<vertex_t>> generate_adjacency_list();
 
+    /**
+     * Zwraca koszt cyklu Hamiltona wg. rozkładu wag grafu
+     *
+     * @param path cykl Hamiltona
+     * @return koszt cyklu
+     */
     int get_path_weight(std::vector<vertex_t>& path);
 
     /**

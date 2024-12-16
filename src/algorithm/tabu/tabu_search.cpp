@@ -2,18 +2,9 @@
 
 #include <map>
 #include <chrono>
-#include <utility>
 #include "tabu_search.h"
 
 solution tabu_search::solve(graph &graph, int time_limit) {
-//     dla małych problemów
-//    static int term_time = 15;
-//    static int critical_iterations = 18;
-
-    // dla średnich problemów
-//    static int term_time = 30;
-//    static int critical_iterations = 35;
-
     solution best_solution;
 
     std::map<std::vector<vertex_t>, int> terms;
@@ -33,22 +24,12 @@ solution tabu_search::solve(graph &graph, int time_limit) {
                                                                         terms,
                                                                         best_solution.weight);
 
-//        if (graph.get_path_weight(best_neighbour) > graph.get_path_weight(current_best)) {
-//            std::cout << "worse neighbour" << std::endl;
-//        }
-
-//        if (best_neighbour == current_best) {
-//            std::cout << "same path" << std::endl;
-//        }
-
         int neighbour_weight = graph.get_path_weight(best_neighbour);
         int current_weight = graph.get_path_weight(current_best);
 
         current_best = best_neighbour;
 
-//        std::cout << neighbour_weight << std::endl;
-
-        terms.emplace(current_best, term_time);
+        terms.emplace(std::vector<vertex_t>(current_best), term_time);
 
         if (neighbour_weight < best_solution.weight) {
             optimal = current_best;
@@ -57,19 +38,14 @@ solution tabu_search::solve(graph &graph, int time_limit) {
                     std::chrono::high_resolution_clock::now() - start_time)
                     .count();
             best_solution.found_after = found_after;
-//            std::cout << "   LEPSZE ROZWIAZANIE: " << best_solution.weight << std::endl;
 
             iterations_without_improvement = 0;
         } else if (neighbour_weight >= current_weight) {
             iterations_without_improvement++;
-//            std::cout << "" << std::endl;
-//            std::cout << neighbour_weight << " >= " << current_weight << std::endl;
-//            std::cout << "BEZ POPRAWY: " << iterations_without_improvement << std::endl;
-//            std::cout << "" << std::endl;
         }
-//        else if (diff > critical_weight_diff) {
-//            iterations_without_improvement++;
-//        }
+        else if (neighbour_weight < current_weight) {
+            iterations_without_improvement = 0;
+        }
 
         std::vector<std::vector<vertex_t>> cycles_to_erase;
 
@@ -97,7 +73,6 @@ solution tabu_search::solve(graph &graph, int time_limit) {
             }
 
             iterations_without_improvement = 0;
-//            std::cout << "RESET" << std::endl;
         }
 
         auto current_runtime = std::chrono::duration_cast<std::chrono::seconds>(

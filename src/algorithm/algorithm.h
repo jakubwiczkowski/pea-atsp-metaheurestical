@@ -21,6 +21,13 @@ public:
      */
     virtual solution solve(graph& graph, int time_limit) = 0;
 
+    /**
+     * Funkcja generująca losową permutacje
+     * cyklu Hamiltona
+     *
+     * @param graph graf
+     * @return losowy cykl Hamiltona
+     */
     std::vector<vertex_t> random_permutation(graph& graph);
 };
 

@@ -13,114 +13,6 @@
 int main() {
     menu main_menu(12);
 
-    tabu_search::neighbour_t swap = [](std::vector<vertex_t>& current,
-                   graph& graph,
-                   tabu_search::eval_func meval,
-                   std::map<std::vector<vertex_t>, int>& tabu_map,
-                   int aspire_to) -> std::vector<vertex_t> {
-        std::vector<vertex_t> without_cycle(current);
-        without_cycle.pop_back();
-
-        std::vector<vertex_t> best_neighbour(current);
-        int best_cost = std::numeric_limits<int>::min();
-
-        for (long i = 0; i < without_cycle.size(); ++i) {
-            for (long j = 0; j < without_cycle.size(); ++j) {
-                if (i == j) continue;
-
-                std::vector<vertex_t> iteration(without_cycle);
-                std::iter_swap(iteration.begin() + i, iteration.begin() + j);
-                iteration.emplace_back(iteration[0]);
-
-                if (graph.get_path_weight(iteration) < aspire_to) {
-                    best_neighbour = iteration;
-                    best_cost = meval(current, iteration, graph);
-                } else {
-                    int eval = meval(current, iteration, graph);
-
-                    if (tabu_map.find(iteration) != tabu_map.end()) continue;
-                    if (eval < best_cost) continue;
-
-                    best_neighbour = iteration;
-                    best_cost = eval;
-                }
-            }
-        }
-
-        return best_neighbour;
-    };
-
-    tabu_search::neighbour_t inversion = [](std::vector<vertex_t>& current,
-                        graph& graph,
-                        tabu_search::eval_func meval,
-                        std::map<std::vector<vertex_t>, int>& tabu_map,
-                        int aspire_to) -> std::vector<vertex_t> {
-        static const size_t insertion_size = 4;
-
-        std::vector<vertex_t> without_cycle(current);
-        without_cycle.pop_back();
-
-        std::vector<vertex_t> best_neighbour;
-        int best_cost = std::numeric_limits<int>::min();
-
-        for (int i = 0; i < without_cycle.size() - insertion_size; ++i) {
-            std::vector<vertex_t> iteration(without_cycle);
-            std::iter_swap(iteration.begin() + i, iteration.begin() + i + 3);
-            std::iter_swap(iteration.begin() + i + 1, iteration.begin() + i + 2);
-            iteration.emplace_back(iteration[0]);
-
-            if (graph.get_path_weight(iteration) < aspire_to) {
-                best_neighbour = iteration;
-                best_cost = meval(current, iteration, graph);
-            } else {
-                int eval = meval(current, iteration, graph);
-
-                if (tabu_map.find(iteration) != tabu_map.end()) continue;
-                if (eval < best_cost) continue;
-
-                best_neighbour = iteration;
-                best_cost = eval;
-            }
-        }
-
-        return best_neighbour;
-    };
-
-    tabu_search::neighbour_t insertion = [](std::vector<vertex_t>& current,
-                        graph& graph,
-                        tabu_search::eval_func meval,
-                        std::map<std::vector<vertex_t>, int>& tabu_map,
-                        int aspire_to) -> std::vector<vertex_t> {
-        static const size_t insertion_size = 4;
-
-        std::vector<vertex_t> without_cycle(current);
-        without_cycle.pop_back();
-
-        std::vector<vertex_t> best_neighbour;
-        int best_cost = std::numeric_limits<int>::min();
-
-        for (int i = 0; i < without_cycle.size() - insertion_size; ++i) {
-            std::vector<vertex_t> iteration(without_cycle);
-            std::rotate(iteration.begin() + i, iteration.begin() + i + insertion_size, iteration.begin() + i + insertion_size + 1);
-            iteration.emplace_back(iteration[0]);
-
-            if (graph.get_path_weight(iteration) < aspire_to) {
-                best_neighbour = iteration;
-                best_cost = meval(current, iteration, graph);
-            } else {
-                int eval = meval(current, iteration, graph);
-
-                if (tabu_map.find(iteration) != tabu_map.end()) continue;
-                if (eval < best_cost) continue;
-
-                best_neighbour = iteration;
-                best_cost = eval;
-            }
-        }
-
-        return best_neighbour;
-    };
-
     solution last_solution;
 
     graph* current_graph = nullptr;
@@ -129,8 +21,8 @@ int main() {
 
     int neighbour_index = 0;
     tabu_search::neighbour_t* picked_neighbour = &swap;
-    int term_length = 14;
-    int iter_without_improvement = 13;
+    int term_length = 30;
+    int iter_without_improvement = 3;
 
     main_menu.add_option(0, "Wczytanie danych z pliku", [&current_graph]{
         std::cout << "[?] Podaj sciezke do pliku: ";
@@ -172,7 +64,7 @@ int main() {
         solution sol = nn.solve(*current_graph, -1);
         print_solution(sol);
     });
-    main_menu.add_option(3, "[TS] Wybor sasiedztwa", [&picked_neighbour, &neighbour_index, &swap, &insertion, &inversion] {
+    main_menu.add_option(3, "[TS] Wybor sasiedztwa", [&picked_neighbour, &neighbour_index] {
         std::cout << "[>] Aktualny typ sasiedztwa: ";
         if (neighbour_index == 0) std::cout << "SWAP" << std::endl;
         else if (neighbour_index == 1) std::cout << "INSERTION" << std::endl;
@@ -188,12 +80,11 @@ int main() {
 
         if (pick - 1 == 0) picked_neighbour = &swap;
         else if (pick - 1 == 1) picked_neighbour = &insertion;
-        else if (pick - 1== 2) picked_neighbour = &inversion;
+        else if (pick - 1 == 2) picked_neighbour = &inversion2;
     });
     main_menu.add_option(4, "[TS] Wybor parametrow", [&term_length, &iter_without_improvement] {
         std::cout << "[>] Aktualna dlugosc kadencji: " << term_length << std::endl;
         std::cout << "[>] Aktualna liczba maksymalna iteracji bez poprawy: " << iter_without_improvement << std::endl;
-        std::cout << "    Proponowane wartosci dla ftv55 (14, 13), ftv170 (x, y), rbg358 (x, y)" << std::endl;
         std::cout << "[?] Podaj nowa dlugosc kadencji: ";
         std::cin >> term_length;
         std::cout << "[?] Podaj nowa liczbe maksymalna iteracji bez poprawy: ";
@@ -212,7 +103,7 @@ int main() {
         last_solution = sol;
     });
     main_menu.add_option(6, "[SW] Ustawienie wspolczynnika zmiany temperatury", [&a]{
-        std::cout << "[>] Aktualny wspolczynnik a: " << a << std::endl;
+        std::cout << "[>] Aktualny wspolczynnik \"a\": " << a << std::endl;
         std::cout << "[?] Podaj nowy wspolczynnik: ";
 
         double temp;
@@ -220,39 +111,13 @@ int main() {
         std::cin >> temp;
 
         if (temp <= 0 || temp >= 1) {
-            std::cout << "[!] Wspolczynnik a musi sie zawierac w zakresie 0 < a < 1" << std::endl;
+            std::cout << "[!] Wspolczynnik \"a\" musi sie zawierac w zakresie 0 < a < 1" << std::endl;
             return;
         }
 
         a = temp;
     });
     main_menu.add_option(7, "[SW] Uruchomienie algorytmu", [&current_graph, &time_limit, &a, &last_solution]{
-        static auto swap = [](const std::vector<vertex_t>& current) {
-            static std::random_device r;
-            static std::default_random_engine e1(r());
-            std::vector<vertex_t> neighbour(current);
-            neighbour.pop_back();
-
-            std::uniform_int_distribution<long> random_vertex(0, neighbour.size() - 1);
-
-            long first_index = random_vertex(e1);
-            long second_index = random_vertex(e1);
-
-            vertex_t first = neighbour[first_index];
-            vertex_t second = neighbour[second_index];
-
-            // muszą być dwa różne
-            while (first == second) {
-                second_index = random_vertex(e1);
-                second = neighbour[second_index];
-            }
-
-            std::iter_swap(neighbour.begin() + first_index, neighbour.begin() + second_index);
-            neighbour.emplace_back(neighbour[0]);
-
-            return neighbour;
-        };
-
         if (current_graph == nullptr) {
             std::cout << "[!] Nie zostal wczytany zadny graf!" << std::endl;
             return;
@@ -260,7 +125,7 @@ int main() {
 
         simulated_annealing sa([&a](double temp) {
             return a * temp;
-        }, swap);
+        }, swap_a);
 
 
         solution sol = sa.solve(*current_graph, time_limit);
@@ -328,40 +193,79 @@ int main() {
 
         std::cout << "[>] Koszt cyklu: " << current_graph->get_path_weight(last_solution.vertices) << std::endl;
     });
-    main_menu.add_option(10, "Debug", [&current_graph, &picked_neighbour] {
-        if (current_graph == nullptr) {
-            std::cout << "[!] Nie zostal wczytany zadny graf!" << std::endl;
-            return;
-        }
+    main_menu.add_option(10, "Debug", [&time_limit, &a, &picked_neighbour, &term_length, &iter_without_improvement] {
+        std::ifstream ftv55_ifs("../data/ftv55.atsp");
+        std::ifstream ftv170_ifs("../data/ftv170.atsp");
+        std::ifstream rgb358_ifs("../data/rbg358.atsp");
 
-        const int offset_x = 10;
-        const int offset_z = 20;
+        regular_loader loader;
+        auto loaded_ftv55 = loader.load(ftv55_ifs);
+        auto loaded_ftv170 = loader.load(ftv170_ifs);
+        auto loaded_rbg358 = loader.load(rgb358_ifs);
+
+        int best_ftv55 = 1608;
+        int best_ftv170 = 2755;
+        int best_rbg358 = 1163;
+
         const int concurrent = 10;
 
-        std::thread threads[concurrent][concurrent];
-        int result[concurrent][concurrent];
+        std::thread runner_threads[concurrent];
+        solution results[concurrent];
 
-        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-
-                threads[i - offset_x][j - offset_z] = std::thread([&current_graph, &picked_neighbour, i, j, &result]() {
-                    tabu_search ts(*picked_neighbour, i, j);
-                    solution sol = ts.solve(*current_graph, 120);
-                    result[i - offset_x][j - offset_z] = sol.weight;
-                });
-            }
-        }
-        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-                threads[i - offset_x][j - offset_z].join();
-            }
+        for (int i = 0; i < concurrent; ++i) {
+            runner_threads[i] = std::thread([i, a, time_limit, &loaded_ftv170, &results, &picked_neighbour, &term_length, &iter_without_improvement] {
+//                simulated_annealing sa([&a](double temp) {
+//                    return a * temp;
+//                }, swap_a);
+                tabu_search ts(*picked_neighbour, term_length, iter_without_improvement);
+                results[i] = ts.solve(*loaded_ftv170.second, time_limit);
+            });
         }
 
-        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-                std::cout << i << "," << j << " = " << result[i - offset_x][j - offset_z] << std::endl;
-            }
+        for (int i = 0; i < concurrent; ++i) {
+            runner_threads[i].join();
         }
+
+//        std::cout << "[>]    LIMIT " << time_limit << " A " << a << std::endl;
+        std::cout << "[>]    LIMIT " << time_limit << " KAD = " << term_length << " ITER = " << iter_without_improvement << std::endl;
+        for (int i = 0; i < concurrent; ++i) {
+            print_solution(results[i]);
+            std::cout << "[>] Blad wzgledny: " << std::abs(results[i].weight - best_ftv170) / ((double) best_ftv170) << std::endl;
+        }
+
+        //        if (current_graph == nullptr) {
+//            std::cout << "[!] Nie zostal wczytany zadny graf!" << std::endl;
+//            return;
+//        }
+
+//        const int offset_x = 70;
+//        const int offset_z = 1000;
+//        const int concurrent = 10;
+//
+//        std::thread threads[concurrent][concurrent];
+//        int result[concurrent][concurrent];
+//
+//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
+//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
+//
+//                threads[i - offset_x][j - offset_z] = std::thread([&current_graph, &picked_neighbour, i, j, &result]() {
+//                    tabu_search ts(*picked_neighbour, i, j);
+//                    solution sol = ts.solve(*current_graph, 120);
+//                    result[i - offset_x][j - offset_z] = sol.weight;
+//                });
+//            }
+//        }
+//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
+//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
+//                threads[i - offset_x][j - offset_z].join();
+//            }
+//        }
+//
+//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
+//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
+//                std::cout << i << "," << j << " = " << result[i - offset_x][j - offset_z] << std::endl;
+//            }
+//        }
     });
     main_menu.add_option(11, "Wyjscie", [&main_menu]{
         main_menu.close();
@@ -369,7 +273,6 @@ int main() {
 
     main_menu.open();
     delete current_graph;
-    delete picked_neighbour;
 
     return 0;
 }
