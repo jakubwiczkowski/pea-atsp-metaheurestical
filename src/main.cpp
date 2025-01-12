@@ -213,12 +213,12 @@ int main() {
         solution results[concurrent];
 
         for (int i = 0; i < concurrent; ++i) {
-            runner_threads[i] = std::thread([i, a, time_limit, &loaded_ftv170, &results, &picked_neighbour, &term_length, &iter_without_improvement] {
+            runner_threads[i] = std::thread([i, a, time_limit, &loaded_ftv55, &results, &picked_neighbour, &term_length, &iter_without_improvement] {
 //                simulated_annealing sa([&a](double temp) {
 //                    return a * temp;
 //                }, swap_a);
                 tabu_search ts(*picked_neighbour, term_length, iter_without_improvement);
-                results[i] = ts.solve(*loaded_ftv170.second, time_limit);
+                results[i] = ts.solve(*loaded_ftv55.second, time_limit);
             });
         }
 
@@ -227,11 +227,22 @@ int main() {
         }
 
 //        std::cout << "[>]    LIMIT " << time_limit << " A " << a << std::endl;
+        solution best = results[0];
         std::cout << "[>]    LIMIT " << time_limit << " KAD = " << term_length << " ITER = " << iter_without_improvement << std::endl;
         for (int i = 0; i < concurrent; ++i) {
-            print_solution(results[i]);
-            std::cout << "[>] Blad wzgledny: " << std::abs(results[i].weight - best_ftv170) / ((double) best_ftv170) << std::endl;
+            std::cout << results[i].weight << "," << std::abs(results[i].weight - best_ftv55) / ((double) best_ftv55) << "," << ((double) results[i].found_after / 1000.0) << std::endl;
+
+            if (results[i].weight < best.weight) best = results[i];
+//            print_solution(results[i]);
+//            std::cout << "[>] Blad wzgledny: " << std::abs(results[i].weight - best_ftv55) / ((double) best_ftv55) << std::endl;
         }
+
+        std::cout << "[>]    DANE DO WYKRESU:" << std::endl;
+        for (auto [time, value]: best.relative_error_values) {
+            std::cout << ((double) time / 1000.0) << "," << std::abs(value - best_ftv55) / ((double) best_ftv55) << std::endl;
+        }
+        std::cout << "[>]   NAJKROTSZA SCIEZKA:" << std::endl;
+        print_solution(best);
 
         //        if (current_graph == nullptr) {
 //            std::cout << "[!] Nie zostal wczytany zadny graf!" << std::endl;

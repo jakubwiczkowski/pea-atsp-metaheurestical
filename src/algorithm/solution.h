@@ -24,7 +24,8 @@ struct solution {
     /**
      * Po ilu milisekundach zostal znaleziony
      */
-     long found_after;
+    long found_after;
+    std::vector<std::pair<long, int>> relative_error_values;
 };
 
 /**

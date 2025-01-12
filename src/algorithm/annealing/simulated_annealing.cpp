@@ -4,6 +4,7 @@
 #include <random>
 #include <utility>
 #include "simulated_annealing.h"
+#include "../greedy/nearest_neighbour.h"
 
 simulated_annealing::simulated_annealing(std::function<double(double)> temp_function,
                                          std::function<std::vector<vertex_t>(
@@ -13,6 +14,8 @@ simulated_annealing::simulated_annealing(std::function<double(double)> temp_func
 }
 
 solution simulated_annealing::solve(graph &graph, int time_limit) {
+    static nearest_neighbour initial_sol_gen;
+
     static int init_temp_iterations = 10000;
     static double initial_increase_acceptance = 0.999;
 
@@ -22,11 +25,13 @@ solution simulated_annealing::solve(graph &graph, int time_limit) {
 
     solution best_solution;
 
-    std::vector<vertex_t> current_path = random_permutation(graph);
+    std::vector<vertex_t> current_path = initial_sol_gen.solve(graph, -1).vertices;
     std::vector<vertex_t> optimal(current_path);
 
     best_solution.vertices = current_path;
     best_solution.weight = graph.get_path_weight(current_path);
+    best_solution.found_after = 0;
+    best_solution.relative_error_values.emplace_back(0, best_solution.weight);
 
     int L_k = ((graph.get_vertices() * (graph.get_vertices() - 1)) / 2);
 
@@ -61,6 +66,7 @@ solution simulated_annealing::solve(graph &graph, int time_limit) {
                             std::chrono::high_resolution_clock::now() - start_time)
                             .count();
                     best_solution.found_after = found_after;
+                    best_solution.relative_error_values.emplace_back(found_after, neighbour_cost);
                 }
             }
 

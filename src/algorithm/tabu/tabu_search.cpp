@@ -3,17 +3,22 @@
 #include <map>
 #include <chrono>
 #include "tabu_search.h"
+#include "../greedy/nearest_neighbour.h"
 
 solution tabu_search::solve(graph &graph, int time_limit) {
+    static nearest_neighbour initial_sol_gen;
+
     solution best_solution;
 
     std::map<std::vector<vertex_t>, int> terms;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
-    std::vector<vertex_t> current_best = random_permutation(graph);
+    std::vector<vertex_t> current_best = initial_sol_gen.solve(graph, -1).vertices;
     std::vector<vertex_t> optimal(current_best);
     best_solution.weight = graph.get_path_weight(optimal);
+    best_solution.found_after = 0;
+    best_solution.relative_error_values.emplace_back(0, best_solution.weight);
 
     int iterations_without_improvement = 0;
 
@@ -38,6 +43,7 @@ solution tabu_search::solve(graph &graph, int time_limit) {
                     std::chrono::high_resolution_clock::now() - start_time)
                     .count();
             best_solution.found_after = found_after;
+            best_solution.relative_error_values.emplace_back(found_after, neighbour_weight);
 
             iterations_without_improvement = 0;
         } else if (neighbour_weight >= current_weight) {
@@ -70,6 +76,7 @@ solution tabu_search::solve(graph &graph, int time_limit) {
                         std::chrono::high_resolution_clock::now() - start_time)
                         .count();
                 best_solution.found_after = found_after;
+                best_solution.relative_error_values.emplace_back(found_after, weight);
             }
 
             iterations_without_improvement = 0;
