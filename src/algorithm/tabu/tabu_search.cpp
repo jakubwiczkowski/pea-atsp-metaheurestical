@@ -2,15 +2,20 @@
 
 #include <map>
 #include <chrono>
+#include <random>
 #include "tabu_search.h"
 #include "../greedy/nearest_neighbour.h"
 
 solution tabu_search::solve(graph &graph, int time_limit) {
     static nearest_neighbour initial_sol_gen;
 
+    std::random_device r;
+    std::default_random_engine e1(r());
+    std::uniform_int_distribution<int> random_int(term_time * 0.5, term_time * 1.5);
+
     solution best_solution;
 
-    std::map<std::vector<vertex_t>, int> terms;
+    tabu_map_t terms;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -23,18 +28,18 @@ solution tabu_search::solve(graph &graph, int time_limit) {
     int iterations_without_improvement = 0;
 
     while (true) {
-        std::vector<vertex_t> best_neighbour = this->neighbour_function(current_best,
+        std::pair<std::pair<vertex_t, vertex_t>, std::vector<vertex_t>> best_neighbour = this->neighbour_function(current_best,
                                                                         graph,
                                                                         meval,
                                                                         terms,
                                                                         best_solution.weight);
 
-        int neighbour_weight = graph.get_path_weight(best_neighbour);
+        int neighbour_weight = graph.get_path_weight(best_neighbour.second);
         int current_weight = graph.get_path_weight(current_best);
 
-        current_best = best_neighbour;
+        current_best = best_neighbour.second;
 
-        terms.emplace(std::vector<vertex_t>(current_best), term_time);
+        terms.emplace(best_neighbour.first, random_int(e1));
 
         if (neighbour_weight < best_solution.weight) {
             optimal = current_best;
@@ -53,7 +58,7 @@ solution tabu_search::solve(graph &graph, int time_limit) {
             iterations_without_improvement = 0;
         }
 
-        std::vector<std::vector<vertex_t>> cycles_to_erase;
+        std::vector<std::pair<vertex_t, vertex_t>> cycles_to_erase;
 
         for (auto& [cycle, term]: terms) {
             terms[cycle]--;
@@ -66,7 +71,8 @@ solution tabu_search::solve(graph &graph, int time_limit) {
         }
 
         if (iterations_without_improvement >= critical_iterations) {
-            current_best = random_permutation(graph);
+//            current_best = random_permutation(graph);
+            current_best = initial_sol_gen.solve(graph, -1).vertices;
             int weight = graph.get_path_weight(current_best);
 
             if (weight < best_solution.weight) {

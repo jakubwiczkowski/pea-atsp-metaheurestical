@@ -213,12 +213,12 @@ int main() {
         solution results[concurrent];
 
         for (int i = 0; i < concurrent; ++i) {
-            runner_threads[i] = std::thread([i, a, time_limit, &loaded_ftv55, &results, &picked_neighbour, &term_length, &iter_without_improvement] {
+            runner_threads[i] = std::thread([i, a, time_limit, &loaded_rbg358, &results, &picked_neighbour, &term_length, &iter_without_improvement] {
 //                simulated_annealing sa([&a](double temp) {
 //                    return a * temp;
 //                }, swap_a);
                 tabu_search ts(*picked_neighbour, term_length, iter_without_improvement);
-                results[i] = ts.solve(*loaded_ftv55.second, time_limit);
+                results[i] = ts.solve(*loaded_rbg358.second, time_limit);
             });
         }
 
@@ -230,53 +230,17 @@ int main() {
         solution best = results[0];
         std::cout << "[>]    LIMIT " << time_limit << " KAD = " << term_length << " ITER = " << iter_without_improvement << std::endl;
         for (int i = 0; i < concurrent; ++i) {
-            std::cout << results[i].weight << "," << std::abs(results[i].weight - best_ftv55) / ((double) best_ftv55) << "," << ((double) results[i].found_after / 1000.0) << std::endl;
+            std::cout << results[i].weight << "," << std::abs(results[i].weight - best_rbg358) / ((double) best_rbg358) << "," << ((double) results[i].found_after / 1000.0) << std::endl;
 
             if (results[i].weight < best.weight) best = results[i];
-//            print_solution(results[i]);
-//            std::cout << "[>] Blad wzgledny: " << std::abs(results[i].weight - best_ftv55) / ((double) best_ftv55) << std::endl;
         }
 
         std::cout << "[>]    DANE DO WYKRESU:" << std::endl;
         for (auto [time, value]: best.relative_error_values) {
-            std::cout << ((double) time / 1000.0) << "," << std::abs(value - best_ftv55) / ((double) best_ftv55) << std::endl;
+            std::cout << ((double) time / 1000.0) << "," << std::abs(value - best_rbg358) / ((double) best_rbg358) << std::endl;
         }
         std::cout << "[>]   NAJKROTSZA SCIEZKA:" << std::endl;
         print_solution(best);
-
-        //        if (current_graph == nullptr) {
-//            std::cout << "[!] Nie zostal wczytany zadny graf!" << std::endl;
-//            return;
-//        }
-
-//        const int offset_x = 70;
-//        const int offset_z = 1000;
-//        const int concurrent = 10;
-//
-//        std::thread threads[concurrent][concurrent];
-//        int result[concurrent][concurrent];
-//
-//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-//
-//                threads[i - offset_x][j - offset_z] = std::thread([&current_graph, &picked_neighbour, i, j, &result]() {
-//                    tabu_search ts(*picked_neighbour, i, j);
-//                    solution sol = ts.solve(*current_graph, 120);
-//                    result[i - offset_x][j - offset_z] = sol.weight;
-//                });
-//            }
-//        }
-//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-//                threads[i - offset_x][j - offset_z].join();
-//            }
-//        }
-//
-//        for (int i = offset_x; i < offset_x + concurrent; ++i) {
-//            for (int j = offset_z; j < offset_z + concurrent; ++j) {
-//                std::cout << i << "," << j << " = " << result[i - offset_x][j - offset_z] << std::endl;
-//            }
-//        }
     });
     main_menu.add_option(11, "Wyjscie", [&main_menu]{
         main_menu.close();

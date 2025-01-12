@@ -26,16 +26,21 @@ public:
     static int meval(std::vector<vertex_t> &x_a, std::vector<vertex_t> &x_k, graph &graph);
 
     /**
+     * Typ listy tabo
+     */
+    typedef std::map<std::pair<vertex_t, vertex_t>, int> tabu_map_t;
+
+    /**
      * Typ funkcji ewaluującej
      */
     typedef std::function<int(std::vector<vertex_t> & x_a, std::vector<vertex_t> & x_k, graph & graph)> eval_func;
     /**
      * Typ funkcji generującej najlepszego sąsiada
      */
-    typedef std::function<std::vector<vertex_t>(std::vector<vertex_t> &,
+    typedef std::function<std::pair<std::pair<vertex_t, vertex_t>, std::vector<vertex_t>>(std::vector<vertex_t> &,
                                                 graph&,
                                                 eval_func,
-                                                std::map<std::vector<vertex_t>, int> &,
+                                                tabu_map_t &,
                                                 int aspire_to)> neighbour_t;
 
     neighbour_t neighbour_function;
@@ -53,12 +58,13 @@ public:
 static tabu_search::neighbour_t swap = [](std::vector<vertex_t>& current,
                                    graph& graph,
                                    tabu_search::eval_func meval,
-                                   std::map<std::vector<vertex_t>, int>& tabu_map,
-                                   int aspire_to) -> std::vector<vertex_t> {
+                                   tabu_search::tabu_map_t& tabu_map,
+                                   int aspire_to) -> std::pair<std::pair<vertex_t, vertex_t>, std::vector<vertex_t>> {
     std::vector<vertex_t> without_cycle(current);
     without_cycle.pop_back();
 
     std::vector<vertex_t> best_neighbour;
+    std::pair<vertex_t, vertex_t> best_swapped;
     int best_cost = std::numeric_limits<int>::min();
 
     for (long i = 0; i < without_cycle.size(); ++i) {
@@ -68,23 +74,27 @@ static tabu_search::neighbour_t swap = [](std::vector<vertex_t>& current,
             std::vector<vertex_t> iteration(without_cycle);
             std::iter_swap(iteration.begin() + i, iteration.begin() + j);
             iteration.emplace_back(iteration[0]);
+            vertex_t i_vertex = iteration[i];
+            vertex_t j_vertex = iteration[j];
 
             if (graph.get_path_weight(iteration) < aspire_to) {
                 best_neighbour = iteration;
+                best_swapped = {std::min(i_vertex, j_vertex), std::max(i_vertex, j_vertex)};
                 best_cost = meval(current, iteration, graph);
             } else {
-                if (tabu_map.find(iteration) != tabu_map.end()) continue;
+                if (tabu_map.find({std::min(i_vertex, j_vertex), std::max(i_vertex, j_vertex)}) != tabu_map.end()) continue;
 
                 int eval = meval(current, iteration, graph);
                 if (eval < best_cost) continue;
 
                 best_neighbour = iteration;
+                best_swapped = {std::min(i_vertex, j_vertex), std::max(i_vertex, j_vertex)};
                 best_cost = eval;
             }
         }
     }
 
-    return best_neighbour;
+    return {best_swapped, best_neighbour};
 };
 
 /**
@@ -93,8 +103,8 @@ static tabu_search::neighbour_t swap = [](std::vector<vertex_t>& current,
 static tabu_search::neighbour_t inversion2 = [](std::vector<vertex_t>& current,
                                          graph& graph,
                                          tabu_search::eval_func meval,
-                                         std::map<std::vector<vertex_t>, int>& tabu_map,
-                                         int aspire_to) -> std::vector<vertex_t> {
+                                         tabu_search::tabu_map_t& tabu_map,
+                                         int aspire_to) -> std::pair<std::pair<vertex_t, vertex_t>, std::vector<vertex_t>> {
     static const size_t insertion_size = 4;
 
     std::vector<vertex_t> without_cycle(current);
@@ -124,7 +134,7 @@ static tabu_search::neighbour_t inversion2 = [](std::vector<vertex_t>& current,
             best_neighbour = iteration;
             best_cost = meval(current, iteration, graph);
         } else {
-            if (tabu_map.find(iteration) != tabu_map.end()) continue;
+//            if (tabu_map.find({std::min()}) != tabu_map.end()) continue;
 
             int eval = meval(current, iteration, graph);
             if (eval < best_cost) continue;
@@ -134,7 +144,7 @@ static tabu_search::neighbour_t inversion2 = [](std::vector<vertex_t>& current,
         }
     }
 
-    return best_neighbour;
+    return {{1, 2}, best_neighbour};
 };
 
 /**
@@ -143,8 +153,8 @@ static tabu_search::neighbour_t inversion2 = [](std::vector<vertex_t>& current,
 static tabu_search::neighbour_t insertion = [](std::vector<vertex_t>& current,
                                                graph& graph,
                                                tabu_search::eval_func meval,
-                                               std::map<std::vector<vertex_t>, int>& tabu_map,
-                                               int aspire_to) -> std::vector<vertex_t> {
+                                               tabu_search::tabu_map_t& tabu_map,
+                                               int aspire_to) -> std::pair<std::pair<vertex_t, vertex_t>, std::vector<vertex_t>> {
     static const size_t insertion_size = 4;
 
     std::vector<vertex_t> without_cycle(current);
@@ -164,7 +174,7 @@ static tabu_search::neighbour_t insertion = [](std::vector<vertex_t>& current,
         } else {
             int eval = meval(current, iteration, graph);
 
-            if (tabu_map.find(iteration) != tabu_map.end()) continue;
+//            if (tabu_map.find(iteration) != tabu_map.end()) continue;
             if (eval < best_cost) continue;
 
             best_neighbour = iteration;
@@ -172,7 +182,7 @@ static tabu_search::neighbour_t insertion = [](std::vector<vertex_t>& current,
         }
     }
 
-    return best_neighbour;
+    return {{1, 2}, best_neighbour};
 };
 
 
