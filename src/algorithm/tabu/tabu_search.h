@@ -11,7 +11,6 @@
  * Klasa implementująca algorytm Tabu Search
  */
 class tabu_search : public algorithm {
-private:
     int term_time;
     int critical_iterations;
 public:

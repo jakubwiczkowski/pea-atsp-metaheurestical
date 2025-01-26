@@ -25,4 +25,6 @@ add_executable(pea_atsp_opt
         src/algorithm/tabu/tabu_search.cpp
         src/algorithm/tabu/tabu_search.cpp
         src/algorithm/tabu/tabu_search.h
-        src/algorithm/algorithm.cpp)
+        src/algorithm/algorithm.cpp
+        src/algorithm/genetic/genetic.cpp
+        src/algorithm/genetic/genetic.h)

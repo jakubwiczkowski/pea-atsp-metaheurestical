@@ -44,6 +44,15 @@ public:
      * @return ilość wierzchołków w grafie
      */
     [[nodiscard]] uint16_t get_vertices() const;
+
+    /**
+     * Zwraca listę wierzchołków w grafie.
+     * Używane do generowania losowych permutacji;
+     *
+     * @return
+     */
+    [[nodiscard]] std::vector<vertex_t> get_vertices_list() const;
+
     /**
      * Zwraca wagę danej krawędzi
      *
@@ -66,7 +75,16 @@ public:
      * @param path cykl Hamiltona
      * @return koszt cyklu
      */
-    int get_path_weight(std::vector<vertex_t>& path);
+    int get_path_weight(std::vector<vertex_t>& path) const;
+
+    /**
+     * Zwraca koszt cyklu Hamiltona wg. rozkładu wag grafu.
+     * Cykl w tym przypadku nie jest domknięty.
+     *
+     * @param path niedomknięty cykl Hamiltona
+     * @return koszt cyklu
+     */
+    int get_non_closed_path_weight(std::vector<vertex_t>& path) const;
 
     /**
      * Zwraca rząd macierzy

@@ -71,7 +71,6 @@ solution tabu_search::solve(graph &graph, int time_limit) {
         }
 
         if (iterations_without_improvement >= critical_iterations) {
-//            current_best = random_permutation(graph);
             current_best = initial_sol_gen.solve(graph, -1).vertices;
             int weight = graph.get_path_weight(current_best);
 

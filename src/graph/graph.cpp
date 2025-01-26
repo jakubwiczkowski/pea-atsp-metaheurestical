@@ -45,6 +45,16 @@ vertex_t graph::get_vertices() const {
     return this->vertices;
 }
 
+std::vector<vertex_t> graph::get_vertices_list() const {
+    std::vector<vertex_t> vertices(this->get_vertices());
+
+    for (vertex_t i = 0; i < this->get_vertices(); i++) {
+        vertices[i] = i;
+    }
+
+    return vertices;
+}
+
 int graph::get_weight(vertex_t u, vertex_t v) const {
     return this->graph_matrix[u][v];
 }
@@ -111,12 +121,24 @@ std::vector<std::vector<vertex_t>> graph::generate_adjacency_list() {
     return adjacency_list;
 }
 
-int graph::get_path_weight(std::vector<vertex_t> &path) {
+int graph::get_path_weight(std::vector<vertex_t> &path) const {
     int weight = 0;
 
     for (size_t i = 0; i < path.size() - 1; ++i) {
         weight += this->get_weight(path[i], path[i + 1]);
     }
+
+    return weight;
+}
+
+int graph::get_non_closed_path_weight(std::vector<vertex_t>& path) const {
+    int weight = 0;
+
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        weight += this->get_weight(path[i], path[i + 1]);
+    }
+
+    weight += this->get_weight(path.back(), path.front());
 
     return weight;
 }
