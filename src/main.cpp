@@ -180,16 +180,19 @@ int main() {
         std::cout << "[>] Aktualna metoda mutacji: ";
         if (picked_mutation == &genetic::insertion) std::cout << "INSERTION" << std::endl;
         else if (picked_mutation == &genetic::inversion) std::cout << "INVERSION" << std::endl;
+        else if (picked_mutation == &genetic::swap) std::cout << "SWAP" << std::endl;
         std::cout << "[>] Dostepne metody:" << std::endl;
         std::cout << "    1. INSERTION" << std::endl;
         std::cout << "    2. INVERSION" << std::endl;
-        std::cout << "[?] Podaj nową metodę (1-2): ";
+        std::cout << "    3. SWAP" << std::endl;
+        std::cout << "[?] Podaj nową metodę (1-3): ";
 
         int pick;
         std::cin >> pick;
 
         if (pick - 1 == 0) picked_mutation = &genetic::insertion;
         else if (pick - 1 == 1) picked_mutation = &genetic::inversion;
+        else if (pick - 1 == 2) picked_mutation = &genetic::swap;
     });
     main_menu.add_option(13, "[GA] Uruchomienie algorytmu", [&current_graph, &time_limit, &last_solution, &population_size,
         &mutation_factor, &crossover_factor, &picked_crossover, &picked_mutation] {
@@ -308,8 +311,8 @@ int main() {
         }
 
         std::cout << "[>]    DANE DO WYKRESU:" << std::endl;
-        for (auto [time, value]: best.relative_error_values) {
-            std::cout << (static_cast<double>(time) / 1000.0) << "," << std::abs(value - best_ftv170) / ((double) best_ftv170) << std::endl;
+        for (auto [time, value]: best.relative_error_values_ga) {
+            std::cout << time << "," << std::abs(value - best_ftv170) / ((double) best_ftv170) << std::endl;
         }
         std::cout << "[>]   NAJKROTSZA SCIEZKA:" << std::endl;
         print_solution(best);

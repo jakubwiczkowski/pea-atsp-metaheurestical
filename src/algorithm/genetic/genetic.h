@@ -29,12 +29,12 @@ public:
 
     solution solve(graph& graph, int time_limit) override;
 
-    static double fitness(graph& graph, chromosome_t& chromosome);
+    static long fitness(graph& graph, chromosome_t& chromosome);
 
     [[nodiscard]] population_t initialize_population(graph& graph) const;
     [[nodiscard]] population_t initialize_population_nn(graph& graph) const;
-    static std::vector<double> evaluate_population(graph& graph, population_t& current_population);
-    population_t selection(std::vector<double>& fitness, population_t& current_population);
+    static std::vector<long> evaluate_population(graph& graph, population_t& current_population);
+    population_t selection(std::vector<long>& fitness, population_t& current_population) const;
     population_t crossover_and_mutate(population_t& selected_population,
                                       const crossover_fn& crossover_function, const mutation_fn& mutation_function) const;
 
@@ -67,6 +67,20 @@ public:
 
         chromosome.erase(chromosome.begin() + old_position);
         chromosome.insert(chromosome.begin() + new_position, gene);
+    };
+
+    const static inline mutation_fn swap = [](chromosome_t& chromosome) {
+        std::uniform_int_distribution<long> random(0, chromosome.size() - 1);
+
+        long position_a = 0, position_b = 0;
+
+        do {
+            position_a = random(random_engine);
+            position_b = random(random_engine);
+        }
+        while (position_a == position_b);
+
+        std::iter_swap(chromosome.begin() + position_a, chromosome.begin() + position_b);
     };
 
     const static inline crossover_fn ox = [](const chromosome_t& parent_a, const chromosome_t& parent_b) -> chromosome_t {

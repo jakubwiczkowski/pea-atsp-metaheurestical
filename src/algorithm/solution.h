@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdint>
+#include <unordered_map>
 #include <limits>
 
 #include "../type/types.h"
@@ -26,6 +26,7 @@ struct solution {
      */
     long found_after;
     std::vector<std::pair<long, int>> relative_error_values;
+    std::unordered_map<long, double> relative_error_values_ga;
 };
 
 /**
