@@ -305,7 +305,8 @@ int main() {
         solution best = results[0];
         std::cout << "[>]    LIMIT " << time_limit << std::endl;
         for (int i = 0; i < concurrent; ++i) {
-            std::cout << results[i].weight << "," << std::abs(results[i].weight - best_ftv170) / static_cast<double>(best_ftv170) << "," << (static_cast<double>(results[i].found_after) / 1000.0) << std::endl;
+            std::cout << std::abs(results[i].relative_error_values_ga[time_limit] - best_ftv170) / static_cast<double>(best_ftv170) << "," << results[i].weight << std::endl;
+            // std::cout << results[i].weight << "," << std::abs(results[i].weight - best_ftv170) / static_cast<double>(best_ftv170) << "," << (static_cast<double>(results[i].found_after) / 1000.0) << std::endl;
 
             if (results[i].weight < best.weight) best = results[i];
         }

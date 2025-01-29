@@ -70,7 +70,7 @@ solution genetic::solve(graph& graph, int time_limit) {
                 std::chrono::high_resolution_clock::now() - start_time)
             .count();
 
-        if (current_runtime % 5 == 0) {
+        if (current_runtime % 10 == 0) {
             long sum = 0;
             for (const auto& value : evaluation) {
                 sum += value;
