@@ -6,22 +6,56 @@
 
 #include "../algorithm.h"
 
-
+/**
+ * Klasa implementująca działanie
+ * algorytmu genetycznego
+ */
 class genetic : public algorithm {
     static inline std::mt19937 random_engine = std::mt19937(std::random_device()());
     static inline std::uniform_real_distribution<> chance = std::uniform_real_distribution(0.0, 1.0);
 
+    /**
+     * Rozmiar populacji
+     */
     unsigned int population_size;
+    /**
+     * Współczynnik mutacji
+     */
     double mutation_factor;
+    /**
+     * Współczynnik krzyżowania
+     */
     double crossover_factor;
 
 public:
+    /**
+     * Typ reprezentujący chromosom
+     */
     typedef std::vector<vertex_t> chromosome_t;
+    /**
+     * Typ reprezentujący funkcję mutacji.
+     * Mutacja jest przeprowadzana na referencji do
+     * chromosomu.
+     */
     typedef std::function<void(chromosome_t&)> mutation_fn;
+    /**
+     * Typ reprezentujący funkcję krzyżowania. Możliwe jest
+     * otrzymanie dwóch różnych potomków z funkcji poprzez
+     * zamienienie ich miejscami w argumentach.
+     */
     typedef std::function<chromosome_t(const chromosome_t&, const chromosome_t&)> crossover_fn;
+    /**
+     * Typ reprezentujący populacje (zbiór chromosomów).
+     */
     typedef std::vector<chromosome_t> population_t;
 
+    /**
+     * Używana funkcja krzyżowania
+     */
     crossover_fn crossover_function;
+    /**
+     * Używana funkcja mutacji
+     */
     mutation_fn mutation_function;
 
     genetic(const crossover_fn& crossover_function, const mutation_fn& mutation_function,
@@ -29,15 +63,64 @@ public:
 
     solution solve(graph& graph, int time_limit) override;
 
+    /**
+     * Funkcja przystosowania chromosomu. Zwraca ona
+     * koszt cyklu Hamiltona stworzony przez chromosom.
+     * Ze względu na to, że mniejszy koszt jest lepszy,
+     * znaki w selekcji zostały odwrócone.
+     *
+     * @param graph graf, na podstawie którego wyliczany jest koszt
+     * @param chromosome chromosom, z którego ma być zbudowany cykl Hamiltona
+     * @return koszt cyklu Hamiltona
+     */
     static long fitness(graph& graph, chromosome_t& chromosome);
 
+    /**
+     * Funkcja inicjalizująca populację chromosomów.
+     * Tworzy ona losowe permutacje tworzące ścieżki Hamiltona.
+     *
+     * @param graph graf, na którego podstawie mają być generowane chromosomy
+     * @return wygenerowana populacja
+     */
     [[nodiscard]] population_t initialize_population(graph& graph) const;
     [[nodiscard]] population_t initialize_population_nn(graph& graph) const;
-    static std::vector<long> evaluate_population(graph& graph, population_t& current_population);
-    population_t selection(std::vector<long>& fitness, population_t& current_population) const;
-    population_t crossover_and_mutate(population_t& selected_population,
-                                      const crossover_fn& crossover_function, const mutation_fn& mutation_function) const;
 
+    /**
+     * Funkcja oceny populacji. Wyniki bazują na funkcji fitness.
+     *
+     * @param graph graf, na podstawie którego ma być robiona ocena
+     * @param current_population aktualna populacja
+     * @return ocena dla każdego osobnika w populacji
+     */
+    static std::vector<long> evaluate_population(graph& graph, population_t& current_population);
+
+    /**
+     * Funkcja selekcji. Stosowaną metodą selekcji jest selekcja
+     * turniejowa.
+     *
+     * @param fitness aktualna ocena populacji
+     * @param current_population aktualna populacja
+     * @return wyniki turnieju
+     */
+    population_t selection(std::vector<long>& fitness, population_t& current_population) const;
+
+    /**
+     * Funkcja krzyżowania. Tworzy potomków z losowych rodziców wybranych
+     * podczas selekcji. Tworzona subpopulacja nie wymienia całkowicie
+     * populacji oryginalnej (sukcesja częściowa).
+     *
+     * @param selected_population wygrani turnieju
+     * @param crossover_function funkcja krzyżowania
+     * @param mutation_function funkcja mutacji
+     * @return potomkowie
+     */
+    population_t crossover_and_mutate(population_t& selected_population,
+                                      const crossover_fn& crossover_function,
+                                      const mutation_fn& mutation_function) const;
+
+    /**
+     * Odwraca losowo wybrany podciąg w chromosomie.
+     */
     const static inline mutation_fn inversion = [](chromosome_t& chromosome) {
         std::uniform_int_distribution<> random(0, chromosome.size() - 1);
 
@@ -83,6 +166,9 @@ public:
         std::iter_swap(chromosome.begin() + position_a, chromosome.begin() + position_b);
     };
 
+    /**
+     * Metoda krzyżowania OX
+     */
     const static inline crossover_fn ox = [](const chromosome_t& parent_a, const chromosome_t& parent_b) -> chromosome_t {
         std::uniform_int_distribution<long> random(0, parent_a.size() - 1);
         chromosome_t child(parent_a.size(), std::numeric_limits<vertex_t>::max());
@@ -110,6 +196,9 @@ public:
         return child;
     };
 
+    /**
+     * Metoda krzyżowania PMX
+     */
     const static inline crossover_fn pmx = [](const chromosome_t& parent_a, const chromosome_t& parent_b) -> chromosome_t {
         std::uniform_int_distribution<long> random(0, parent_a.size() - 1);
         chromosome_t child(parent_a.size(), std::numeric_limits<vertex_t>::max());
