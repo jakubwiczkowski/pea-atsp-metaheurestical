@@ -143,10 +143,10 @@ cmake ..
 ### Running the Project
 
 ```bash
-./pea_atsp_opt --instance ftv170.atsp --method GA --pop-size 200 --pc 0.8 --pm 0.05 --time 240
+./pea_atsp_opt
 ```
 
-Adjust parameters as needed in the command-line options.
+Adjust parameters as needed in the CLI.
 
 ## License
 
